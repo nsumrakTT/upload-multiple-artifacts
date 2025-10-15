@@ -35,7 +35,7 @@ jobs:
           rm -rf downloaded
           mkdir -p downloaded
           cat << 'EOF' > _config.json
-          ${matrix.config}
+          ${{matrix.config}}
           EOF
           jq -r '.[].name // empty' _config.json | while IFS= read -r name; do
             echo "Downloading artifact: $name"
