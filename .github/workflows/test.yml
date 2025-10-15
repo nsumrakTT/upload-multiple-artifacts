@@ -34,7 +34,7 @@ jobs:
         run: |
           rm -rf downloaded
           mkdir -p downloaded
-          jq -r '.[].name // empty' ${{matrix.config}} | while IFS= read -r name; do
+          jq -r '.[].name // empty' tests/${{matrix.config}} | while IFS= read -r name; do
             echo "Downloading artifact: $name"
             gh run download ${{ github.run_id }} --name "$name" -D downloaded
           done
