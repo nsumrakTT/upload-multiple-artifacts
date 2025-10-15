@@ -38,6 +38,7 @@ jobs:
             echo "Downloading artifact: $name"
             gh run download ${{ github.run_id }} --name "$name" -D downloaded
           done
+          ls -laR downloaded
       - name: Compare logs artifact contents
         run: |
           diff -ru tests/fixtures/logs downloaded/logs
