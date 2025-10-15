@@ -34,10 +34,7 @@ jobs:
         run: |
           rm -rf downloaded
           mkdir -p downloaded
-          cat << 'EOF' > _config.json
-          $(cat ${{matrix.config}})
-          EOF
-          jq -r '.[].name // empty' _config.json | while IFS= read -r name; do
+          jq -r '.[].name // empty' ${{matrix.config}} | while IFS= read -r name; do
             echo "Downloading artifact: $name"
             gh run download ${{ github.run_id }} --name "$name" -D downloaded
           done
