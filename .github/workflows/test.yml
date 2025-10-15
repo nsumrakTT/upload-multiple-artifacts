@@ -34,7 +34,13 @@ jobs:
         run: |
           rm -rf downloaded
           mkdir -p downloaded
-          gh run download ${{ github.run_id }} -D downloaded
+          cat << 'EOF' > _config.json
+          ${matrix.config}
+          EOF
+          jq -r '.[].name // empty' _config.json | while IFS= read -r name; do
+            echo "Downloading artifact: $name"
+            gh run download ${{ github.run_id }} --name "$name" -D downloaded
+          done
       - name: Compare logs artifact contents
         run: |
           diff -ru tests/fixtures/logs downloaded/logs
