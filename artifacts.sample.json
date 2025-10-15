@@ -1,0 +1,6 @@
+[
+  { "name": "logs", "path": "logs" },
+  { "name": "reports", "path": ["coverage", "reports/junit.xml"] }
+]
+
+

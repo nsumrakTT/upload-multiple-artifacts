@@ -1,0 +1,20 @@
+{
+  "name": "upload-multiple-artifacts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GitHub Action to upload multiple artifacts from a JSON config.",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "npx --yes @vercel/ncc build index.js -o dist",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@actions/artifact": "^2.2.0",
+    "@actions/core": "^1.10.1"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.3"
+  }
+}
+

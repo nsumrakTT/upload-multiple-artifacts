@@ -1,0 +1,22 @@
+name: Upload Multiple Artifacts
+description: Upload multiple artifacts defined in a JSON array config file using GitHub Actions artifact toolkit.
+author: Nebojsa Sumrak
+
+branding:
+  icon: package
+  color: blue
+
+inputs:
+  config:
+    description: Path to JSON file containing an array of artifacts. Each item has "name" and "path" (string or array of strings). Paths may be files or directories.
+    required: true
+  continue-on-error:
+    description: If true, skip artifacts with no files instead of failing the action.
+    required: false
+    default: 'false'
+
+runs:
+  using: node20
+  main: dist/index.js
+
+

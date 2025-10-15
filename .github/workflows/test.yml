@@ -1,0 +1,45 @@
+name: Test - Upload Multiple Artifacts
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build action
+        run: |
+          npm install
+          npm run build
+      - name: Upload Multiple Artifacts
+        uses: ./. 
+        with:
+          config: artifacts.test.json
+          continue-on-error: 'false'
+      - name: Install gh
+        uses: cli/gh-action@v2
+      - name: Download artifacts using gh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf downloaded
+          mkdir -p downloaded
+          gh run download ${{ github.run_id }} -D downloaded
+      - name: Compare logs artifact contents
+        run: |
+          diff -ru tests/fixtures/logs downloaded/logs
+      - name: Compare reports artifact contents
+        run: |
+          mkdir -p expected_reports
+          cp -r tests/fixtures/coverage expected_reports/
+          mkdir -p expected_reports/reports
+          cp tests/fixtures/reports/junit.xml expected_reports/reports/junit.xml
+          diff -ru expected_reports downloaded/reports
+
+
