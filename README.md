@@ -26,7 +26,24 @@ The JSON file must be an array. Each item must have:
 ]
 ```
 
-- `path` supports file or directory paths. Globs are not supported.
+- `path` supports file or directory paths and glob wildcards.
+
+### Glob patterns
+
+This action supports glob wildcards via `fast-glob`:
+
+```json
+[
+  {
+    "name": "reports",
+    "path": ["reports/**/*.xml", "coverage/**"]
+  }
+]
+```
+
+Notes:
+- Patterns are resolved from the workspace root (the repo checkout).
+- Both files and directories matched by patterns are included (directories are traversed recursively).
 
 ### Example Config
 

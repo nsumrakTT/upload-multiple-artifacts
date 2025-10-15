@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const path = require('path');
 const fs = require('fs');
 const { DefaultArtifactClient } = require('@actions/artifact');
+const fg = require('fast-glob');
 
 function isString(value) {
   return typeof value === 'string' || value instanceof String;
@@ -54,31 +55,61 @@ async function collectFilesFromDirectory(dirPath) {
   return files;
 }
 
+function hasGlobChars(p) {
+  return /[*?[\]{}()!]/.test(p);
+}
+
 async function resolveInputPathsToFiles(workspace, inputPaths) {
   const files = [];
   for (const input of inputPaths) {
     const abs = path.isAbsolute(input) ? input : path.join(workspace, input);
-    const exists = await pathExists(abs);
-    if (!exists) {
-      core.warning(`Path not found, skipping: ${input}`);
-      continue;
-    }
-    const st = await statSafe(abs);
-    if (!st) {
-      core.warning(`Unable to stat path, skipping: ${input}`);
-      continue;
-    }
-    if (st.isDirectory()) {
-      const dirFiles = await collectFilesFromDirectory(abs);
-      if (dirFiles.length === 0) {
-        core.warning(`Directory is empty, skipping: ${input}`);
-      } else {
+    if (hasGlobChars(abs)) {
+      const fileMatches = await fg(abs, {
+        dot: true,
+        onlyFiles: true,
+        followSymbolicLinks: true,
+        unique: true,
+        absolute: true
+      });
+      const dirMatches = await fg(abs, {
+        dot: true,
+        onlyDirectories: true,
+        followSymbolicLinks: true,
+        unique: true,
+        absolute: true
+      });
+      for (const dir of dirMatches) {
+        const dirFiles = await collectFilesFromDirectory(dir);
         files.push(...dirFiles);
       }
-    } else if (st.isFile()) {
-      files.push(abs);
+      if (fileMatches.length === 0 && dirMatches.length === 0) {
+        core.warning(`Glob did not match any files or directories: ${input}`);
+      }
+      files.push(...fileMatches);
+      continue;
     } else {
-      core.warning(`Not a regular file or directory, skipping: ${input}`);
+      const exists = await pathExists(abs);
+      if (!exists) {
+        core.warning(`Path not found, skipping: ${input}`);
+        continue;
+      }
+      const st = await statSafe(abs);
+      if (!st) {
+        core.warning(`Unable to stat path, skipping: ${input}`);
+        continue;
+      }
+      if (st.isDirectory()) {
+        const dirFiles = await collectFilesFromDirectory(abs);
+        if (dirFiles.length === 0) {
+          core.warning(`Directory is empty, skipping: ${input}`);
+        } else {
+          files.push(...dirFiles);
+        }
+      } else if (st.isFile()) {
+        files.push(abs);
+      } else {
+        core.warning(`Not a regular file or directory, skipping: ${input}`);
+      }
     }
   }
   // De-duplicate and normalize
