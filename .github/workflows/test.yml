@@ -41,7 +41,7 @@ jobs:
           ls -laR downloaded
       - name: Compare logs artifact contents
         run: |
-          diff -ru tests/fixtures/logs downloaded/logs
+          diff -ru tests/fixtures/logs/app.log downloaded/app.log
       - name: Compare reports artifact contents
         run: |
           mkdir -p expected_reports
