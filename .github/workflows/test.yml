@@ -7,6 +7,11 @@ on:
 
 jobs:
   test-action:
+    strategy:
+      matrix:
+        config:
+          - artifacts.test.json
+          - artifacts.test-wc.json
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,7 +25,7 @@ jobs:
       - name: Upload Multiple Artifacts
         uses: ./. 
         with:
-          config: artifacts.test.json
+          config: ${{ matrix.config }}
           continue-on-error: 'false'
       - name: Download artifacts using gh
         env:

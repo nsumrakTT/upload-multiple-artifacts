@@ -1,0 +1,6 @@
+[
+  { "name": "logs", "path": "tests/fixtures/logs" },
+  { "name": "reports", "path": ["tests/fixtures/cove*", "tests/fixtures/reports/*.xml"] }
+]
+
+
