@@ -22,8 +22,6 @@ jobs:
         with:
           config: artifacts.test.json
           continue-on-error: 'false'
-      - name: Install gh
-        uses: cli/gh-action@v2
       - name: Download artifacts using gh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -42,4 +40,14 @@ jobs:
           cp tests/fixtures/reports/junit.xml expected_reports/reports/junit.xml
           diff -ru expected_reports downloaded/reports
 
-
+  check-all-green:
+    if: always()
+    needs:
+      - test-action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if the needed jobs succeeded or failed
+        id: check-jobs
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
