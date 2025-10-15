@@ -22,8 +22,6 @@ jobs:
         with:
           config: artifacts.test.json
           continue-on-error: 'false'
-      - name: Install gh
-        uses: cli/gh-action@v2
       - name: Download artifacts using gh
         env:
           GH_TOKEN: ${{ github.token }}
