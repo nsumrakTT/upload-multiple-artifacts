@@ -3,9 +3,4 @@
   { "name": "reports", "path": ["tests/fixtures/coverage", "tests/fixtures/reports/junit.xml"] }
 ]
 
-[
-  { "name": "logs", "path": "tests/fixtures/logs" },
-  { "name": "reports", "path": ["tests/fixtures/coverage", "tests/fixtures/reports/junit.xml"] }
-]
-
 
