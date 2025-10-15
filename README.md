@@ -8,6 +8,7 @@ Uploads multiple artifacts based on a JSON config file using the GitHub Actions 
 
 - **config** (required): Path to a JSON file containing an array of objects with `name` and `path` fields.
 - **continue-on-error** (optional, default `false`): If `true`, artifacts that resolve to no files are skipped with a warning instead of failing the action.
+- **compression-level** (optional): Integer 0–9 to control gzip compression used for artifact uploads. `0` = no compression (fastest), `9` = max compression (smallest). Defaults to toolkit behavior when omitted.
 
 ### JSON Schema (informal)
 
