@@ -12,6 +12,7 @@ jobs:
         config:
           - artifacts.test.json
           - artifacts.test-wc.json
+          - artifacts.test-empty.json
     runs-on: ubuntu-latest
     permissions:
       contents: read

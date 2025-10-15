@@ -1,0 +1,4 @@
+[
+    { "name": "logs-empty", "path": "tests/fixtures/logs" },
+    {}
+]
