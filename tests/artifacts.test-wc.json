@@ -1,5 +1,4 @@
 [
   { "name": "logs-wc", "path": "tests/**/logs" },
   { "name": "reports-wc", "path": ["tests/fixtures/cove*", "tests/fixtures/reports/*.xml"] }
-
-
+]
