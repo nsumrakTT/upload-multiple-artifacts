@@ -76,6 +76,7 @@ const core = __nccwpck_require__(551);
 const path = __nccwpck_require__(928);
 const fs = __nccwpck_require__(896);
 const { DefaultArtifactClient } = __nccwpck_require__(856);
+const fg = __nccwpck_require__(82);
 
 function isString(value) {
   return typeof value === 'string' || value instanceof String;
@@ -128,31 +129,49 @@ async function collectFilesFromDirectory(dirPath) {
   return files;
 }
 
+function hasGlobChars(p) {
+  return /[*?[\]{}()!]/.test(p);
+}
+
 async function resolveInputPathsToFiles(workspace, inputPaths) {
   const files = [];
   for (const input of inputPaths) {
     const abs = path.isAbsolute(input) ? input : path.join(workspace, input);
-    const exists = await pathExists(abs);
-    if (!exists) {
-      core.warning(`Path not found, skipping: ${input}`);
-      continue;
-    }
-    const st = await statSafe(abs);
-    if (!st) {
-      core.warning(`Unable to stat path, skipping: ${input}`);
-      continue;
-    }
-    if (st.isDirectory()) {
-      const dirFiles = await collectFilesFromDirectory(abs);
-      if (dirFiles.length === 0) {
-        core.warning(`Directory is empty, skipping: ${input}`);
-      } else {
+    if (hasGlobChars(abs)) {
+      const fileMatches = await fg(abs, { dot: true, onlyFiles: true, followSymbolicLinks: true, unique: true, absolute: true });
+      const dirMatches = await fg(abs, { dot: true, onlyDirectories: true, followSymbolicLinks: true, unique: true, absolute: true });
+      for (const dir of dirMatches) {
+        const dirFiles = await collectFilesFromDirectory(dir);
         files.push(...dirFiles);
       }
-    } else if (st.isFile()) {
-      files.push(abs);
+      if (fileMatches.length === 0 && dirMatches.length === 0) {
+        core.warning(`Glob did not match any files or directories: ${input}`);
+      }
+      files.push(...fileMatches);
+      continue;
     } else {
-      core.warning(`Not a regular file or directory, skipping: ${input}`);
+      const exists = await pathExists(abs);
+      if (!exists) {
+        core.warning(`Path not found, skipping: ${input}`);
+        continue;
+      }
+      const st = await statSafe(abs);
+      if (!st) {
+        core.warning(`Unable to stat path, skipping: ${input}`);
+        continue;
+      }
+      if (st.isDirectory()) {
+        const dirFiles = await collectFilesFromDirectory(abs);
+        if (dirFiles.length === 0) {
+          core.warning(`Directory is empty, skipping: ${input}`);
+        } else {
+          files.push(...dirFiles);
+        }
+      } else if (st.isFile()) {
+        files.push(abs);
+      } else {
+        core.warning(`Not a regular file or directory, skipping: ${input}`);
+      }
     }
   }
   // De-duplicate and normalize
@@ -185,9 +204,14 @@ function ensureArrayOfArtifacts(value) {
   if (!Array.isArray(value)) {
     throw new Error('Config JSON must be an array of artifact definitions.');
   }
-  return value.map((item, index) => {
+  const results = [];
+  for (let index = 0; index < value.length; index++) {
+    const item = value[index];
     if (!item || typeof item !== 'object') {
       throw new Error(`Artifact at index ${index} must be an object.`);
+    }
+    if (Object.keys(item).length === 0) {
+      continue;
     }
     const name = item.name;
     const paths = toPathArray(item.path);
@@ -197,8 +221,9 @@ function ensureArrayOfArtifacts(value) {
     if (paths.length === 0) {
       throw new Error(`Artifact "${name}" has no valid "path" entries.`);
     }
-    return { name: String(name).trim(), paths };
-  });
+    results.push({ name: String(name).trim(), paths });
+  }
+  return results;
 }
 
 async function run() {
@@ -207,6 +232,15 @@ async function run() {
     const configPath = core.getInput('config', { required: true });
     const continueOnErrorInput = core.getInput('continue-on-error') || 'false';
     const continueOnError = String(continueOnErrorInput).toLowerCase() === 'true';
+    const compressionLevelRaw = core.getInput('compression-level') || '';
+    let compressionLevel = undefined;
+    if (String(compressionLevelRaw).trim().length > 0) {
+      const parsed = Number.parseInt(String(compressionLevelRaw), 10);
+      if (Number.isNaN(parsed) || parsed < 0 || parsed > 9) {
+        throw new Error('compression-level must be an integer between 0 and 9.');
+      }
+      compressionLevel = parsed;
+    }
 
     const absoluteConfigPath = path.isAbsolute(configPath)
       ? configPath
@@ -246,11 +280,15 @@ async function run() {
 
       const rootDirectory = computeCommonRootDirectory(files);
       core.info(`Uploading artifact "${artifactDef.name}" with ${files.length} file(s).`);
+      const uploadOptions = { continueOnError };
+      if (typeof compressionLevel === 'number') {
+        uploadOptions.compressionLevel = compressionLevel;
+      }
       const result = await client.uploadArtifact(
         artifactDef.name,
         files,
         rootDirectory,
-        { continueOnError }
+        uploadOptions
       );
       core.info(`Uploaded artifact "${result.artifactName}" with ${result.successfulItems} successful item(s).`);
     }

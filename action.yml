@@ -14,6 +14,9 @@ inputs:
     description: If true, skip artifacts with no files instead of failing the action.
     required: false
     default: 'false'
+  compression-level:
+    description: Compression level for artifact uploads (0-9). 0=no compression, 9=max compression.
+    required: false
 
 runs:
   using: node20

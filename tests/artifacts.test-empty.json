@@ -1,0 +1,5 @@
+[
+    { "name": "logs-empty", "path": "tests/fixtures/logs" },
+    { "name": "reports-empty", "path": ["tests/fixtures/coverage", "tests/fixtures/reports/junit.xml"] },
+    {}
+]
