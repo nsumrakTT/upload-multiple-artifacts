@@ -8,6 +8,7 @@ on:
 jobs:
   test-action:
     strategy:
+      fail-fast: false
       matrix:
         config:
           - artifacts.test.json
