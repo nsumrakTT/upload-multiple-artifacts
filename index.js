@@ -1,8 +1,8 @@
-const core = require('@actions/core');
-const path = require('path');
-const fs = require('fs');
-const { DefaultArtifactClient } = require('@actions/artifact');
-const fg = require('fast-glob');
+import * as core from '@actions/core';
+import path from 'path';
+import fs from 'fs';
+import { DefaultArtifactClient } from '@actions/artifact';
+import fg from 'fast-glob';
 
 function isString(value) {
   return typeof value === 'string' || value instanceof String;

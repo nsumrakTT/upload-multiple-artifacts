@@ -2,6 +2,7 @@
   "name": "upload-multiple-artifacts",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "GitHub Action to upload multiple artifacts from a JSON config.",
   "main": "dist/index.js",
   "license": "Apache-2.0",
@@ -10,9 +11,9 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@actions/artifact": "^2.2.0",
-    "@actions/core": "^1.10.1",
-    "fast-glob": "^3.3.2"
+    "@actions/artifact": "^5.0.3",
+    "@actions/core": "^1.11.1",
+    "fast-glob": "^3.3.3"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.3"
